@@ -44,13 +44,15 @@ jobs:
           echo ${{ steps.data.outputs.version_check }}
           echo "Deploying to Stage"
 
+          git checkout ${{ steps.data.outputs.version }}
           git tag stage/${{ steps.data.outputs.version }}
-          git push origin stage/${{ steps.data.outputs.version }}
-
           git tag stage/latest
+          git push origin stage/${{ steps.data.outputs.version }}
           git push origin stage/latest
 
           git push origin --delete ${{ github.head_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Deploy hotfix
         if: steps.data.outputs.prtype == 'stage-hotfix' && steps.data.outputs.version_check == 'true'
@@ -66,28 +68,19 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+          git checkout ${{ steps.data.outputs.version }}
           git tag stage/${{ steps.data.outputs.version }}
-          git push origin stage/${{ steps.data.outputs.version }}
-
           git tag stage/latest
+          git push origin stage/${{ steps.data.outputs.version }}
           git push origin stage/latest
-
-          PR_HEAD_HASH=${{ steps.data.outputs.hash }}
-          TARGET_BRANCH="prod"
-          git fetch origin $TARGET_BRANCH
-          git checkout $TARGET_BRANCH
-          # Merge PR branch into target branch
-          git merge --ff-only $PR_HEAD_HASH
-          # Push the fast-forwarded branch back to the repository
-          git push origin $TARGET_BRANCH
-
           git tag prod/${{ steps.data.outputs.version }}
-          git push origin prod/${{ steps.data.outputs.version }}
-
           git tag prod/latest
-          git push prod stage/latest
+          git push origin prod/${{ steps.data.outputs.version }}
+          git push origin prod/latest
 
           git push origin --delete ${{ github.head_ref }}
+
+          
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
@@ -103,9 +96,13 @@ jobs:
           echo "Deploying to Stage"
 
           git tag prod/${{ steps.data.outputs.version }}
+          git tag prod/latest
           git push origin prod/${{ steps.data.outputs.version }}
+          git push origin prod/latest
 
           git push origin --delete ${{ github.head_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
             
       - name: Deploy to Dev
         if: steps.data.outputs.branch == 'dev'
