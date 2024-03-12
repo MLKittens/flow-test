@@ -56,6 +56,20 @@ jobs:
           git push origin $TARGET_BRANCH
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      - name: Deploy to Prod
+        if: steps.data.outputs.prtype == 'releases' && steps.data.outputs.version_check == 'true'
+        run: |
+          echo "${{ steps.data.outputs.branch }}"
+          echo ${{ steps.data.outputs.prbranch }}
+          echo ${{ steps.data.outputs.hash }}
+          echo ${{ steps.data.outputs.prtype }}
+          echo ${{ steps.data.outputs.version }}
+          echo ${{ steps.data.outputs.version_check }}
+          echo "Deploying to Stage"
+
+          git tag ${{ steps.data.outputs.version }}
+          git push origin ${{ steps.data.outputs.version }}
             
       - name: Deploy to Stage
         if: steps.data.outputs.prtype == 'releases' && steps.data.outputs.version_check == 'true'
