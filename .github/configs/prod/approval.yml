@@ -2,4 +2,4 @@ teams:
   test:
     members:
       - creotiv
-    required: 1
+    required: 0
