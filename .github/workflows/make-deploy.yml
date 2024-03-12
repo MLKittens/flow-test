@@ -34,8 +34,6 @@ jobs:
       - name: Creating branch 
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-        with:
-          token: ${{ secrets.PAT }}
         run: |
           LATEST=${{ github.event.inputs.env }}/latest
           VERSION=${{ github.event.inputs.release-version }}
