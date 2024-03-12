@@ -1,0 +1,52 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: Version to deploy
+        required: true
+      env:
+        required: true
+        type: choice
+        description: Environemnt to deploy to
+        options:
+          - stage
+          - prod
+
+jobs:
+  make-deploy-pr:
+    name: "Creating Deploy PR"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version
+        shell: bash
+        run: |
+          export version=${{ github.event.inputs.release-version }}
+          [[ $version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && exit 0 || exit 1
+
+      - name: Checkout previous deployment
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.env }}/latest
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Creating branch 
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        run: |
+          LATEST=${{ github.event.inputs.env }}/latest
+          VERSION=${{ github.event.inputs.release-version }}
+          ENV=${{ github.event.inputs.env }}
+          
+          git fetch origin
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git checkout -b $ENV/$VERSION
+          git push origin $ENV/$VERSION
+
+          git checkout releases-$ENV/$VERSION
+
+          CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
+          gh pr create --base $ENV --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"

@@ -4,12 +4,13 @@ on:
     types: [opened, ready_for_review]
     branches:
       - dev
-      - stage
-      - prod
+      - stage/*
+      - prod/*
 
 jobs:
   add-reviews:
     runs-on: ubuntu-latest
+    name: "Assigning"
     steps:
       - name: Extract branch name
         shell: bash
