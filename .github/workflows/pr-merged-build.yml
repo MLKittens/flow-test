@@ -46,9 +46,9 @@ jobs:
 
           git checkout ${{ steps.data.outputs.version }}
           git tag stage/${{ steps.data.outputs.version }}
-          git tag stage/latest
+          git tag stage/latest -f
           git push origin stage/${{ steps.data.outputs.version }}
-          git push origin stage/latest
+          git push origin stage/latest -f
 
           git push origin --delete ${{ github.head_ref }}
         env:
@@ -70,13 +70,13 @@ jobs:
 
           git checkout ${{ steps.data.outputs.version }}
           git tag stage/${{ steps.data.outputs.version }}
-          git tag stage/latest
+          git tag stage/latest-f
           git push origin stage/${{ steps.data.outputs.version }}
-          git push origin stage/latest
+          git push origin stage/latest -f
           git tag prod/${{ steps.data.outputs.version }}
-          git tag prod/latest
+          git tag prod/latest -f
           git push origin prod/${{ steps.data.outputs.version }}
-          git push origin prod/latest
+          git push origin prod/latest -f
 
           git push origin --delete ${{ github.head_ref }}
 
@@ -96,9 +96,9 @@ jobs:
           echo "Deploying to Stage"
 
           git tag prod/${{ steps.data.outputs.version }}
-          git tag prod/latest
+          git tag prod/latest -f
           git push origin prod/${{ steps.data.outputs.version }}
-          git push origin prod/latest
+          git push origin prod/latest -f
 
           git push origin --delete ${{ github.head_ref }}
         env:
