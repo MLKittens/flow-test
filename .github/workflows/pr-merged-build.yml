@@ -1,13 +1,27 @@
 on:
   pull_request:
-    types:
-      - closed
+    # types:
+    #   - closed
+    branches:
+      - dev
+      - stage
+      - prod
 
 jobs:
   if_merged:
-    if: github.event.pull_request.merged != true
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-    - run: |
-        echo "This is not a PR merge"
-        exit 1
+      - name: Extract branch name
+        shell: bash
+        env:
+          GITHUB_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: echo "branch=${GITHUB_BRANCH}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: build
+        run: |
+          echo ${{ github.event.pull_request.base.ref }}
+          echo ${{ github.head_ref }}
+          echo "Running build on" ${{ steps.extract_branch.outputs.branch }}
+          
