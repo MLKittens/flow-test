@@ -43,10 +43,13 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+          # creating base brunch for PR
           git checkout -b $ENV/$VERSION
           git push origin $ENV/$VERSION
 
+          # creting PR branch based on version tag
           git checkout -b $ENV-deploy/$VERSION $VERSION
+          git push origin $ENV-deploy/$VERSION
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
           gh pr create --base $ENV --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
