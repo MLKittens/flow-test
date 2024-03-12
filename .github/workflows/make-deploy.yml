@@ -54,4 +54,4 @@ jobs:
           git push origin $ENV-deploy/$VERSION
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
-          gh pr create --base $ENV/VERSION --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
+          gh pr create --base $ENV/$VERSION --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
