@@ -42,8 +42,8 @@ jobs:
           ENV=${{ github.event.inputs.env }}
           
           git fetch origin
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions "${ENV^}
+          git config user.email "actions-${ENV}@github.com"
 
           # creating base brunch for PR
           git checkout -b $ENV/$VERSION
