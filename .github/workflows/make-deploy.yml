@@ -46,7 +46,7 @@ jobs:
           git checkout -b $ENV/$VERSION
           git push origin $ENV/$VERSION
 
-          git checkout releases-$ENV/$VERSION
+          git checkout -b $ENV-deploy/$VERSION $VERSION
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
           gh pr create --base $ENV --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
