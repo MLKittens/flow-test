@@ -4,14 +4,14 @@ on:
   pull_request:
     branches:
       - dev
-      - stage
-      - prod
+      - stage/*
+      - prod/*
   pull_request_review:
     types: [edited, submitted, dismissed]
     branches:
       - dev
-      - stage
-      - prod
+      - stage/*
+      - prod/*
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,9 +24,7 @@ jobs:
     steps:
       - name: Extract branch name
         shell: bash
-        env:
-          GITHUB_BRANCH: ${{ github.event.pull_request.base.ref }}
-        run: echo "branch=${GITHUB_BRANCH}" >> $GITHUB_OUTPUT
+        run: echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
         id: extract_branch
 
       - name: Check

@@ -21,7 +21,7 @@ jobs:
           echo "hash="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-8) >> $GITHUB_OUTPUT
           echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
           echo "prbranch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
-          echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%-*}) >> $GITHUB_OUTPUT
+          echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%/*}) >> $GITHUB_OUTPUT
           echo "version="$version >> $GITHUB_OUTPUT
           echo "version_check="$([[ $version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")  >> $GITHUB_OUTPUT
         id: data
@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Deploy to Stage
-        if: steps.data.outputs.prtype == 'releases' && steps.data.outputs.version_check == 'true'
+        if: steps.data.outputs.prtype == 'stage-deploy' && steps.data.outputs.version_check == 'true'
         run: |
           echo "${{ steps.data.outputs.branch }}"
           echo ${{ steps.data.outputs.prbranch }}
@@ -48,7 +48,7 @@ jobs:
           git push origin ${{ steps.data.outputs.version }}
 
       - name: Deploy hotfix
-        if: steps.data.outputs.prtype == 'hotfixes' && steps.data.outputs.version_check == 'true'
+        if: steps.data.outputs.prtype == 'stage-hotfix' && steps.data.outputs.version_check == 'true'
         run: |
           echo "${{ steps.data.outputs.branch }}"
           echo ${{ steps.data.outputs.prbranch }}
@@ -76,7 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - name: Deploy to Prod
-        if: steps.data.outputs.prtype == 'prod' && steps.data.outputs.version_check == 'true'
+        if: steps.data.outputs.prtype == 'prod-deploy' && steps.data.outputs.version_check == 'true'
         run: |
           echo "${{ steps.data.outputs.branch }}"
           echo ${{ steps.data.outputs.prbranch }}
