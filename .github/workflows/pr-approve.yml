@@ -32,5 +32,5 @@ jobs:
       - name: Check
         uses: creotiv/custom-approval-management@v0.0.4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           config: .github/configs/${{ steps.extract_branch.outputs.branch }}/approval.yml
