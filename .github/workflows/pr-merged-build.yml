@@ -47,6 +47,11 @@ jobs:
           git tag stage/${{ steps.data.outputs.version }}
           git push origin stage/${{ steps.data.outputs.version }}
 
+          git tag stage/latest
+          git push origin stage/latest
+
+          git push origin --delete ${{ github.head_ref }}
+
       - name: Deploy hotfix
         if: steps.data.outputs.prtype == 'stage-hotfix' && steps.data.outputs.version_check == 'true'
         run: |
@@ -61,6 +66,12 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+          git tag stage/${{ steps.data.outputs.version }}
+          git push origin stage/${{ steps.data.outputs.version }}
+
+          git tag stage/latest
+          git push origin stage/latest
+
           PR_HEAD_HASH=${{ steps.data.outputs.hash }}
           TARGET_BRANCH="prod"
           git fetch origin $TARGET_BRANCH
@@ -72,6 +83,11 @@ jobs:
 
           git tag prod/${{ steps.data.outputs.version }}
           git push origin prod/${{ steps.data.outputs.version }}
+
+          git tag prod/latest
+          git push prod stage/latest
+
+          git push origin --delete ${{ github.head_ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
@@ -88,6 +104,8 @@ jobs:
 
           git tag prod/${{ steps.data.outputs.version }}
           git push origin prod/${{ steps.data.outputs.version }}
+
+          git push origin --delete ${{ github.head_ref }}
             
       - name: Deploy to Dev
         if: steps.data.outputs.branch == 'dev'
