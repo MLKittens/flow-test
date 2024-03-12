@@ -22,14 +22,15 @@ jobs:
     name: "Approval"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
+      - name: Extract branch name
+        shell: bash
+        env:
+          GITHUB_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: echo "branch=${GITHUB_BRANCH}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Check
         uses: creotiv/custom-approval-management@v0.0.4
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           config: .github/configs/${{ steps.extract_branch.outputs.branch }}/approval.yml
