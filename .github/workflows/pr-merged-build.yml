@@ -1,0 +1,77 @@
+name: Deploy on PR merge
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+      - stage
+      - prod
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          export version=$(str=${{ github.head_ref }};  echo ${str#*/})
+          echo "hash="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-8) >> $GITHUB_OUTPUT
+          echo "branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_OUTPUT
+          echo "prbranch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+          echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+          echo "version="$version >> $GITHUB_OUTPUT
+          echo "version_check="$([[ $version =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")  >> $GITHUB_OUTPUT
+        id: data
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Deploy hotfix
+        if: steps.data.outputs.prtype == 'hotfixes' && steps.data.outputs.version_check == 'true'
+        run: |
+          echo "${{ steps.data.outputs.branch }}"
+          echo ${{ steps.data.outputs.prbranch }}
+          echo ${{ steps.data.outputs.hash }}
+          echo ${{ steps.data.outputs.prtype }}
+          echo ${{ steps.data.outputs.version }}
+          echo ${{ steps.data.outputs.version_check }}
+
+          echo "Deploying to Stage and Prod"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          PR_HEAD_HASH=${{ steps.data.outputs.hash }}
+          TARGET_BRANCH="prod"
+          git fetch origin $TARGET_BRANCH
+          git checkout $TARGET_BRANCH
+          # Merge PR branch into target branch
+          git merge --ff-only $PR_HEAD_HASH
+          # Push the fast-forwarded branch back to the repository
+          git push origin $TARGET_BRANCH
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+            
+      - name: Deploy to Stage
+        if: steps.data.outputs.prtype == 'releases' && steps.data.outputs.version_check == 'true'
+        run: |
+          echo "${{ steps.data.outputs.branch }}"
+          echo ${{ steps.data.outputs.prbranch }}
+          echo ${{ steps.data.outputs.hash }}
+          echo ${{ steps.data.outputs.prtype }}
+          echo ${{ steps.data.outputs.version }}
+          echo ${{ steps.data.outputs.version_check }}
+          echo "Deploying to Stage"
+
+          git tag ${{ steps.data.outputs.version }}
+          git push origin ${{ steps.data.outputs.version }}
+
+      - name: Deploy to Dev
+        if: steps.data.outputs.branch == 'dev'
+        run: |
+          echo "Deploying to Dev"

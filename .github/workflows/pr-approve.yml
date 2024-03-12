@@ -1,0 +1,36 @@
+name: Require Members Approval
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - stage
+      - prod
+  pull_request_review:
+    types: [edited, submitted, dismissed]
+    branches:
+      - dev
+      - stage
+      - prod
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  require-members-approval:
+    name: "Approval"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        env:
+          GITHUB_BRANCH: ${{ github.event.pull_request.base.ref }}
+        run: echo "branch=${GITHUB_BRANCH}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Check
+        uses: creotiv/custom-approval-management@v0.0.4
+        with:
+          token: ${{ secrets.PAT }}
+          config: .github/configs/${{ steps.extract_branch.outputs.branch }}/approval.yml
