@@ -5,8 +5,8 @@ on:
       - closed
     branches:
       - dev
-      - stage/*
-      - prod/*
+      - stage-base/*
+      - prod-base/*
 
 jobs:
   pr-merged:
@@ -20,7 +20,7 @@ jobs:
           VERSION=$(str=${{ github.head_ref }};  echo ${str#*/})
           PRBRANCH=${{ github.head_ref }}
           echo "hash="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-8) >> $GITHUB_OUTPUT
-          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%-*}) >> $GITHUB_OUTPUT
           echo "prbranch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
           echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%/*}) >> $GITHUB_OUTPUT
           echo "version="$VERSION >> $GITHUB_OUTPUT
@@ -91,7 +91,7 @@ jobs:
       - name: Extract PR data
         shell: bash
         run: |
-          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%-*}) >> $GITHUB_OUTPUT
         id: data
 
       - name: Checkout
@@ -103,5 +103,5 @@ jobs:
       - name: Clean up
         if: steps.data.outputs.branch != 'dev'
         run: |
-          git push origin --delete ${{ github.head_ref }}
-          git push origin --delete ${{ github.event.pull_request.base.ref}}
+          git push origin --delete ${{ github.head_ref }} || true
+          git push origin --delete ${{ github.event.pull_request.base.ref}} || true

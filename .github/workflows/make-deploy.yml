@@ -49,8 +49,8 @@ jobs:
           git config user.email "actions@github.com"
 
           # creating base branch for PR
-          git checkout -b $ENV/$VERSION
-          git push origin $ENV/$VERSION
+          git checkout -b $ENV-base/$VERSION
+          git push origin $ENV-base/$VERSION
 
           # creating PR branch based on version tag
           git checkout -b $ENV-deploy/$VERSION $VERSION
@@ -59,4 +59,4 @@ jobs:
           [[ "$ISHOTFIX" == "true" ]] && TITLE="[$VERSION] Hotfix deployment" || TITLE="[$VERSION] ${ENV^} deployment"
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
-          gh pr create --base $ENV/$VERSION --title "$TITLE" --body "$CHANGES"
+          gh pr create --base $ENV-base/$VERSION --title "$TITLE" --body "$CHANGES"
