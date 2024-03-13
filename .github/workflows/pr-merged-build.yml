@@ -36,9 +36,9 @@ jobs:
 
       - name: Deploy to Stage
         if: |
-          steps.data.outputs.is_hotfix == 'true' || \
-          steps.data.outputs.prtype == 'stage-deploy' && \
-          steps.data.outputs.version_check == 'true'
+          steps.data.outputs.is_hotfix == 'true' || 
+          (steps.data.outputs.prtype == 'stage-deploy' && 
+          steps.data.outputs.version_check == 'true')
         run: |
           echo "${{ steps.data.outputs.branch }}"
           echo ${{ steps.data.outputs.prbranch }}
@@ -58,9 +58,9 @@ jobs:
 
       - name: Deploy to Prod
         if: |
-          steps.data.outputs.is_hotfix == 'true' || \
-          steps.data.outputs.prtype == 'prod-deploy' && \
-          steps.data.outputs.version_check == 'true'
+          steps.data.outputs.is_hotfix == 'true' || 
+          (steps.data.outputs.prtype == 'prod-deploy' && 
+          steps.data.outputs.version_check == 'true')
         run: |
           echo "${{ steps.data.outputs.branch }}"
           echo ${{ steps.data.outputs.prbranch }}
