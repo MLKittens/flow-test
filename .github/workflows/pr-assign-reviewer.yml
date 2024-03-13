@@ -4,8 +4,8 @@ on:
     types: [opened, ready_for_review]
     branches:
       - dev
-      - stage/*
-      - prod/*
+      - stage-base/*
+      - prod-base/*
 
 jobs:
   add-reviews:
