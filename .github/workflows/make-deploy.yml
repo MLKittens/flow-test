@@ -24,8 +24,7 @@ jobs:
         shell: bash
         run: |
           VERSION=${{ github.event.inputs.release-version }}
-          PRBRANCH=${{ github.head_ref }}
-          echo "is_hotfix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
+          echo "is_hotfix="$([[ $VERSION =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
         id: data
         
       - name: Checkout previous deployment
