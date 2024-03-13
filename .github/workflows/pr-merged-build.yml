@@ -83,7 +83,19 @@ jobs:
         run: |
           echo "Deploying to Dev"
 
-      - name: Delete PR branch
+  cleanup-on-pr-close:
+    name: "Cleanup on PR close"
+    needs: pr-merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+        id: data
+
+      - name: Clean up
         if: steps.data.outputs.branch != 'dev'
         run: |
           git push origin --delete ${{ github.head_ref }}
+          git push origin --delete ${{ github.event.pull_request.base.ref}}
