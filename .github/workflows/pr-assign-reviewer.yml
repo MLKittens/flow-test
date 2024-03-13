@@ -15,8 +15,9 @@ jobs:
       - name: Extract PR data
         shell: bash
         run: |
+          PRBRANCH=${{ github.head_ref }}
           echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
-          echo "hotfix_suffix="$([[ $github.head_ref =~ hotfix.*?$ ]] && echo "-hotfix" || echo "") >> $GITHUB_OUTPUT
+          echo "hotfix_suffix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "-hotfix" || echo "") >> $GITHUB_OUTPUT
         id: data
 
       - uses: kentaro-m/auto-assign-action@v2.0.0
