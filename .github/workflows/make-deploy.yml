@@ -57,7 +57,7 @@ jobs:
           git checkout -b $ENV-deploy/$VERSION $VERSION
           git push origin $ENV-deploy/$VERSION
           
-          [[ ISHOTFIX == 'true' ]] && TITLE="[$VERSION] Hotfix deployment" || TITLE="[$VERSION] ${ENV^} deployment"
+          [[ "$ISHOTFIX" == "true" ]] && TITLE="[$VERSION] Hotfix deployment" || TITLE="[$VERSION] ${ENV^} deployment"
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
-          gh pr create --base $ENV/$VERSION --title $TITLE --body "$CHANGES"
+          gh pr create --base $ENV/$VERSION --title "$TITLE" --body "$CHANGES"
