@@ -94,6 +94,12 @@ jobs:
           echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
         id: data
 
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
       - name: Clean up
         if: steps.data.outputs.branch != 'dev'
         run: |
