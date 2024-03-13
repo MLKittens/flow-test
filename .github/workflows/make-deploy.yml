@@ -1,0 +1,60 @@
+name: Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: Version to deploy
+        required: true
+      env:
+        required: true
+        type: choice
+        description: Environemnt to deploy to
+        options:
+          - stage
+          - prod
+
+
+jobs:
+  make-deploy-pr:
+    name: "Creating Deploy PR"
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          VERSION=${{ github.event.inputs.release-version }}
+          echo "hotfix_suffix="$([[ $github.head_ref =~ hotfix.*?$ ]] && echo "-hotfix" || echo "") >> $GITHUB_OUTPUT
+        id: data
+        
+      - name: Checkout previous deployment
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+          ref: ${{ github.event.inputs.env }}/latest
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Creating PR 
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        run: |
+          LATEST=${{ github.event.inputs.env }}/latest
+          VERSION=${{ github.event.inputs.release-version }}
+          ENV=${{ github.event.inputs.env }}
+          HOTIFX=${{ steps.data.outputs.hotfix_suffix }}
+          
+          git fetch origin
+          git config user.name "GitHub Actions "
+          git config user.email "actions@github.com"
+
+          # creating base branch for PR
+          git checkout -b $ENV/$VERSION
+          git push origin $ENV/$VERSION
+
+          # creating PR branch based on version tag
+          git checkout -b $ENV-deploy/$VERSION $VERSION
+          git push origin $ENV-deploy/$VERSION
+
+          CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
+          gh pr create --base $ENV/$VERSION --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
