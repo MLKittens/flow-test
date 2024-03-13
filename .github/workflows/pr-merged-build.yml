@@ -1,0 +1,108 @@
+name: Deploy on PR merge
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+      - stage-base/*
+      - prod-base/*
+
+jobs:
+  pr-merged:
+    if: github.event.pull_request.merged == true
+    name: "Build & Deploy"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          VERSION=$(str=${{ github.head_ref }};  echo ${str#*/})
+          PRBRANCH=${{ github.head_ref }}
+          echo "hash="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-8) >> $GITHUB_OUTPUT
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%-*}) >> $GITHUB_OUTPUT
+          echo "prbranch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
+          echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+          echo "version="$VERSION >> $GITHUB_OUTPUT
+          echo "version_check="$([[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")  >> $GITHUB_OUTPUT
+          echo "is_hotfix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
+        id: data
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Deploy to Stage
+        if: |
+          steps.data.outputs.is_hotfix == 'true' || 
+          (steps.data.outputs.prtype == 'stage-deploy' && 
+          steps.data.outputs.version_check == 'true')
+        run: |
+          echo "${{ steps.data.outputs.branch }}"
+          echo ${{ steps.data.outputs.prbranch }}
+          echo ${{ steps.data.outputs.hash }}
+          echo ${{ steps.data.outputs.prtype }}
+          echo ${{ steps.data.outputs.version }}
+          echo ${{ steps.data.outputs.version_check }}
+          echo "Deploying to Stage"
+
+          git checkout ${{ steps.data.outputs.version }}
+          git tag stage/${{ steps.data.outputs.version }}
+          git tag stage/latest -f
+          git push origin stage/${{ steps.data.outputs.version }}
+          git push origin stage/latest -f
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      - name: Deploy to Prod
+        if: |
+          steps.data.outputs.is_hotfix == 'true' || 
+          (steps.data.outputs.prtype == 'prod-deploy' && 
+          steps.data.outputs.version_check == 'true')
+        run: |
+          echo "${{ steps.data.outputs.branch }}"
+          echo ${{ steps.data.outputs.prbranch }}
+          echo ${{ steps.data.outputs.hash }}
+          echo ${{ steps.data.outputs.prtype }}
+          echo ${{ steps.data.outputs.version }}
+          echo ${{ steps.data.outputs.version_check }}
+          echo "Deploying to Stage"
+
+          git tag prod/${{ steps.data.outputs.version }}
+          git tag prod/latest -f
+          git push origin prod/${{ steps.data.outputs.version }}
+          git push origin prod/latest -f
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+            
+      - name: Deploy to Dev
+        if: steps.data.outputs.branch == 'dev'
+        run: |
+          echo "Deploying to Dev"
+
+  cleanup-on-pr-close:
+    name: "Cleanup on PR close"
+    if: ${{ always() }}
+    needs: pr-merged
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%-*}) >> $GITHUB_OUTPUT
+        id: data
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Clean up
+        if: steps.data.outputs.branch != 'dev'
+        run: |
+          git push origin --delete ${{ github.head_ref }} || true
+          git push origin --delete ${{ github.event.pull_request.base.ref}} || true
