@@ -24,7 +24,8 @@ jobs:
         shell: bash
         run: |
           VERSION=${{ github.event.inputs.release-version }}
-          echo "hotfix_suffix="$([[ $github.head_ref =~ hotfix.*?$ ]] && echo "-hotfix" || echo "") >> $GITHUB_OUTPUT
+          PRBRANCH=${{ github.head_ref }}
+          echo "is_hotfix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
         id: data
         
       - name: Checkout previous deployment
@@ -42,7 +43,7 @@ jobs:
           LATEST=${{ github.event.inputs.env }}/latest
           VERSION=${{ github.event.inputs.release-version }}
           ENV=${{ github.event.inputs.env }}
-          HOTIFX=${{ steps.data.outputs.hotfix_suffix }}
+          ISHOTFIX=${{ steps.data.outputs.is_hotfix }}
           
           git fetch origin
           git config user.name "GitHub Actions "
@@ -55,6 +56,8 @@ jobs:
           # creating PR branch based on version tag
           git checkout -b $ENV-deploy/$VERSION $VERSION
           git push origin $ENV-deploy/$VERSION
+          
+          [[ ISHOTFIX == 'true' ]] && TITLE="[$VERSION] Hotfix deployment" || TITLE="[$VERSION] ${ENV^} deployment"
 
           CHANGES=$(git log $LATEST..HEAD --pretty=format:"%h - %s (%an, %ad)")
-          gh pr create --base $ENV/$VERSION --title "[$VERSION] ${ENV^} deployment" --body "$CHANGES"
+          gh pr create --base $ENV/$VERSION --title $TITLE --body "$CHANGES"

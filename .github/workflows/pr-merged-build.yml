@@ -18,13 +18,14 @@ jobs:
         shell: bash
         run: |
           VERSION=$(str=${{ github.head_ref }};  echo ${str#*/})
+          PRBRANCH=${{ github.head_ref }}
           echo "hash="$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-8) >> $GITHUB_OUTPUT
           echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
           echo "prbranch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
           echo "prtype="$(str=${{ github.head_ref }}; echo ${str%%/*}) >> $GITHUB_OUTPUT
           echo "version="$VERSION >> $GITHUB_OUTPUT
           echo "version_check="$([[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] && echo "true" || echo "false")  >> $GITHUB_OUTPUT
-          echo "is_hotfix="$([[ $github.head_ref =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
+          echo "is_hotfix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "true" || echo "false") >> $GITHUB_OUTPUT
         id: data
 
       - name: Checkout
