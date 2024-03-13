@@ -1,0 +1,25 @@
+name: 'Auto Assign Reviewers'
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches:
+      - dev
+      - stage/*
+      - prod/*
+
+jobs:
+  add-reviews:
+    runs-on: ubuntu-latest
+    name: "Assigning"
+    steps:
+      - name: Extract PR data
+        shell: bash
+        run: |
+          PRBRANCH=${{ github.head_ref }}
+          echo "branch="$(str=${{ github.event.pull_request.base.ref}}; echo ${str%%/*}) >> $GITHUB_OUTPUT
+          echo "hotfix_suffix="$([[ $PRBRANCH =~ hotfix.*?$ ]] && echo "-hotfix" || echo "") >> $GITHUB_OUTPUT
+        id: data
+
+      - uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          configuration-path: .github/configs/${{ steps.data.outputs.branch }}/assign${{ steps.data.outputs.hotfix_suffix }}.yml
