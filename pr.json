@@ -1,6 +1,6 @@
 {
     "action": "closed",
-    "number": 2,
+    "number": 23,
     "pull_request": {
       "merged": true,
       "id": 12345678,
