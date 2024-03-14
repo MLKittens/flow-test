@@ -50,9 +50,9 @@ jobs:
           echo "Deploying to Stage"
 
           git checkout ${{ steps.data.outputs.version }}
-          git tag stage/${{ steps.data.outputs.version }}
+          git tag stage/${{ steps.data.outputs.version }} -f
           git tag stage/latest -f
-          git push origin stage/${{ steps.data.outputs.version }}
+          git push origin stage/${{ steps.data.outputs.version }} -f
           git push origin stage/latest -f
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
@@ -71,9 +71,9 @@ jobs:
           echo ${{ steps.data.outputs.version_check }}
           echo "Deploying to Stage"
 
-          git tag prod/${{ steps.data.outputs.version }}
+          git tag prod/${{ steps.data.outputs.version }} -f
           git tag prod/latest -f
-          git push origin prod/${{ steps.data.outputs.version }}
+          git push origin prod/${{ steps.data.outputs.version }} -f
           git push origin prod/latest -f
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
