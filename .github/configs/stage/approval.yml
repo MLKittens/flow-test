@@ -1,5 +1,12 @@
 teams:
-  test:
+  platform-team-pr-notify:
     members:
       - creotiv
+      - alexander-level-co
+      - Alexandergos
+    required: 0
+  platform-users:
+    members:
+      - placer14
+      - asimihsan
     required: 0
